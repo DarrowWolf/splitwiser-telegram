@@ -1,0 +1,26 @@
+{
+  "name": "splitwiser-telegram",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node dev.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "node-fetch": "^3.3.2",
+    "node-telegram-bot-api": "^0.66.0",
+    "sequelize": "^6.37.3",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
