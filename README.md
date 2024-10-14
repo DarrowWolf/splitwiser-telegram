@@ -92,7 +92,8 @@ Once your bot is up and running, you can interact with it via Telegram. Use the 
 - `/login` - Log in to your Splitwise account.
 - `/groups` or `/group` - View your Splitwise groups.
 - `/unlink` - Unlink your Splitwise account.
-- `/expense` - Create a new expense.
+- `/expense` - Create a new expense. (must have default group set)
 - `/setgroup` - Set a default group for your expenses.
+- `/balance` - See group's balances. (must have default group set)
 
 ---
