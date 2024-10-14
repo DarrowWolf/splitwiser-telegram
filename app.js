@@ -386,6 +386,87 @@ bot.onText(/\/expense/, async (msg) => {
 		});
 });
 
+bot.onText(/\/balance/, async (msg) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+
+  log.info(
+    `Received /balance command from chat ID: ${chatId}, user ID: ${userId}`
+  );
+
+  // Clean up any existing session
+  await cleanUpSession(chatId);
+
+  // Retrieve the access token from the database
+  const accessToken = await loadToken(chatId);
+  if (!accessToken) {
+    log.debug(`No access token found for chat ID: ${chatId}`);
+    bot.sendMessage(chatId, "You are not logged in. Please use /login first.");
+    return;
+  }
+
+  try {
+    const token = await Token.findOne({ where: { chatId } });
+    if (!token || !token.defaultGroupId) {
+      log.debug(`No default group set for chat ID: ${chatId}`);
+      bot.sendMessage(
+        chatId,
+        "No default group is set. Please use /setgroup first."
+      );
+      return;
+    }
+
+    const groupId = token.defaultGroupId;
+
+    log.debug(`Fetching group details for group ID: ${groupId}`);
+    const groupResponse = await fetch(
+      `https://secure.splitwise.com/api/v3.0/get_group/${groupId}`,
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+
+    const groupData = await groupResponse.json();
+    const group = groupData.group;
+
+    let groupInfo = `*Group Name*: ${group.name}\n`;
+    groupInfo += `*Group Members and Balances*:\n`;
+
+    group.members.forEach((member) => {
+      const firstName = member.first_name || '';
+      const lastName = member.last_name || '';
+
+      let balanceAmount = '0.00';
+      let balanceCurrency = '';
+      if (member.balance && member.balance.length > 0 && member.balance[0]) {
+        balanceAmount = member.balance[0].amount || '0.00';
+        balanceCurrency = member.balance[0].currency_code || '';
+      }
+
+      let memberInfo = `- ${firstName} ${lastName}`;
+      if (balanceCurrency) {
+        memberInfo += ` (Balance: ${balanceAmount} ${balanceCurrency})`;
+      } else {
+        memberInfo += ` (Balance: ${balanceAmount})`;
+      }
+      groupInfo += `${memberInfo}\n`;
+    });
+
+    bot.sendMessage(chatId, groupInfo, { parse_mode: "Markdown" });
+
+  } catch (err) {
+    log.error(
+      `Error fetching group details for chat ID ${chatId}:`,
+      err
+    );
+    bot.sendMessage(
+      chatId,
+      "Failed to fetch group details. Please try again."
+    );
+  }
+});
+
 bot.on("callback_query", async (callbackQuery) => {
   const chatId = callbackQuery.message.chat.id;
   const fromId = callbackQuery.from.id;
